@@ -10,6 +10,6 @@ if [file exists $filepath ]
         echo  " non esiste "
         
 fi
-[ -a $filepath ] &&  zenity  --warning --text="stai cancellando  i dati presenti nel file : "  $filepath ||  echo  "ok  proseguo"
-sleep 1
+#[ -a $filepath ] &&  zenity  --warning --text="stai cancellando  i dati presenti nel file : "  $filepath ||  echo  "ok  proseguo"
+#sleep 1
 echo  "test"
