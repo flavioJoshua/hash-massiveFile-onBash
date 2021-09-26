@@ -9,9 +9,14 @@ function jumpto
     exit
 }
 
-function funtest
+##  la funzione che  fa hashing
+function hashfun 
 {
-    echo "funzione spettacolare"
+    filehash=$1
+    pathhash=$2
+    echo "begin hashing path: " $pathhash " - Filehash: "  $filehash
+    for ff in $(find $pathhash -type f);do echo $( md5sum $ff)  " - "   $(date) >> $filehash ; done
+    echo "end hashing"
 }
 if test ! $1  = ""
 then 
@@ -23,7 +28,11 @@ fi
 
 test=qualcosa 
 #echo $test
-filepath=$(zenity --file-selection   --save --title=" segli il tuo fileName esiste o nuovo")
+
+hashpath=$(zenity --file-selection   --directory --save --title=" scegli il Path  di cui vuoi avere l Hashing")
+
+
+filepath=$(zenity --file-selection   --save --title=" scegli il tuo fileName esiste o nuovo")
 #test -a $filepath  && echo  "ok  proseguo"  ||   echo  "KO non   proseguo"      
 testa:
 [ -a $filepath ] &&  zenity  --question --text="stai cancellando  i dati presenti nel file :   $filepath";result=$(echo $?)  ||  echo  "ok  proseguo"
@@ -49,5 +58,5 @@ if  test $result = "0"
 fi
 
 #sleep 1
-funtest 
-echo  "test"
+hashfun $filepath   $hashpath
+echo  "Fine hashing"
