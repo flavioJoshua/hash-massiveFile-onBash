@@ -59,7 +59,14 @@ function hashfun
     nodata1=$3
     echo -e  "\n\tvalore di nodata1:  $nodata1  \n"
     echo "begin hashing path: " $pathhash " - Filehash: "  $filehash
-    for ff in $(find $pathhash -type f);do echo $( md5sum $ff)  " - "   $(date) >> $filehash ; done
+    if test  $nodata1 = "1"
+    then
+        echo -e "\t Hashing senza data - base mode"
+        for ff in $(find $pathhash -type f);do  md5sum $ff >> $filehash ; done
+
+    else
+        for ff in $(find $pathhash -type f);do echo $( md5sum $ff)  " - "   $(date) >> $filehash ; done
+    fi
     echo "end hashing"
 }
 
@@ -69,15 +76,25 @@ function testParam
 
     #echo " ci sono due parametri"
     echo "  check fileHash per serializzare gli Hash delle directory"
-    touch $1
     ls -l $1
     res=$?
-    echo " result \$? "   $res
     if test ! $res = "0"
     then 
-        echo " Errore nella creazione file Hashing"
-        exit 2
+        echo " il file hash non esiste preventivamente  \$? "   $res
+        touch $1
+        ls -l $1
+        res=$?
+        echo " result \$? "   $res
+        if test ! $res = "0"
+        then 
+            echo " Errore nella creazione file Hashing"
+            exit 2
+        fi
+        rm $1
+        else
+            echo " il file hash già  esiste   \$? "   $res
     fi
+    
     echo "  check della  directory root per Hashing"
     ls -dl $2
     res=$?
