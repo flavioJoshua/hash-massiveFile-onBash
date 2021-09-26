@@ -135,13 +135,17 @@ then
         then
             filepath=$1
             hashpath=$2
+            nodata="3"
             testParam  $filepath  $hashpath
             jumpto testa
+        else  # mancava il caso  in cui sono 0 param 
+            nodata="3"
         
     fi
-
+    echo " nodata: $nodata"
 else
     echo " numero parametri  sbagliati  $#"
+    exit 6
 fi
 
 # if test ! $1  = ""
@@ -167,7 +171,7 @@ fi
 
 filepath=$(zenity --file-selection   --save --title=" scegli il tuo fileName esiste o nuovo")
 res=$?
-echo   $hashpath  " - "  res
+echo   $hashpath  " - "  $res
 
 if test $res = "1"
 then 
@@ -178,8 +182,15 @@ fi
 
 #test -a $filepath  && echo  "ok  proseguo"  ||   echo  "KO non   proseguo"      
 testa:
-[ -a $filepath ] &&  zenity  --question --text="stai cancellando  i dati presenti nel file :   $filepath";result=$?  ||  echo  "ok  proseguo"
-
+echo " file path : "   $filepath
+if  test -a $filepath 
+then 
+    zenity  --question --text="stai cancellando  i dati presenti nel file :   $filepath"
+    resulta=$? 
+ else
+    echo  "ok  proseguo"
+    resulta="33"
+fi
 # if test -a $filepath 
 # then
 #          zenity  --question --text="stai cancellando  i dati presenti nel file :"
@@ -190,15 +201,18 @@ testa:
 
 
 
-echo $result
-if  test $result = "0" 
-    then 
+echo  "  Flag risultato file hash già presente : " $resulta
+if  test $resulta = "0" 
+then 
         echo "OK "
         rm $filepath
         echo "cancellato"
-    else
-        echo  " non cancello il  file pre esistente  - KO "
-        #exit 
+elif test $resulta = "33" 
+    then
+        echo  "file nuovo fornito con   parametro FileHash "
+        #exit
+else
+        echo  " non cancello il  file pre esistente  " 
 fi
 
 #sleep 1

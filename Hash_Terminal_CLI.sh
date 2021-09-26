@@ -59,38 +59,46 @@ function hashfun
 {
     filehash=$1
     pathhash=$2
+    nodata1=$3
+    echo -e  "\n\tvalore di nodata1:  $nodata1  \n"
     echo "begin hashing path: " $pathhash " - Filehash: "  $filehash
-    for ff in $(find $pathhash -type f);do echo $( md5sum $ff)  " - "   $(date) >> $filehash ; done
-    res=$?
-    
-    echo " result \$? "   $res
-    if test ! $res = "0"
-    then 
-        echo " Errore nella procedura di hashing"
-        exit 4
+    if test  $nodata1 = "1"
+    then
+        echo -e "\t Hashing senza data - base mode"
+        for ff in $(find $pathhash -type f);do  md5sum $ff >> $filehash ; done
+
+    else
+        for ff in $(find $pathhash -type f);do echo $( md5sum $ff)  " - "   $(date) >> $filehash ; done
     fi
     echo "end hashing"
 }
    # non funziona la doppia condizione [( ! $1  = "" ) &&  ( ! $2  = "" )]
 
 
-numparam=$(echo $#)
-if test ! $numparam = "2"      
-then               
-    echo " non ci sono : FileHash(file repository degli Hash) - PathHash (il path  dei files che devono avere l hashing )"
-    exit 1
-else
-    echo " ci sono due parametri"
+function testParam
+{
+
+    #echo " ci sono due parametri"
     echo "  check fileHash per serializzare gli Hash delle directory"
-    touch $1
     ls -l $1
     res=$?
-    echo " result $? "   $res
-    if test ! $res=0
+    if test ! $res = "0"
     then 
-        echo " Errore nella creazione file Hashing"
-        exit 2
+        echo " il file hash non esiste preventivamente  \$? "   $res
+        touch $1
+        ls -l $1
+        res=$?
+        echo " result \$? "   $res
+        if test ! $res = "0"
+        then 
+            echo " Errore nella creazione file Hashing"
+            exit 2
+        fi
+        rm $1
+        else
+            echo " il file hash già  esiste   \$? "   $res
     fi
+    
     echo "  check della  directory root per Hashing"
     ls -dl $2
     res=$?
@@ -102,11 +110,82 @@ else
         exit 3
     fi
     echo " tutto OK "
-    #exit 0 
-    filepath=$1
-    hashpath=$2
-    jumpto testa
+}
+
+#########
+param=$#
+echo $param
+if test  \( $param = "3" \) -o    \( $param = "2" \)
+then
+    echo  echo  "ok parametri "
+    if test  \( $param = "3" \) 
+    then
+            if  test $1 = "base" 
+            then
+            echo  "ok base " 
+            else  
+                echo "errore:  3 parametri, il primo parametro puo accettato è base "
+                exit 5
+            fi
+            filepath=$2
+            hashpath=$3
+            nodata="1"  #  creo  hash md5  compatibile con md5sum in check -c  file 
+            if test  \( $param = "3" \) 
+            then
+                testParam  $filepath  $hashpath
+                jumpto testa
+            fi    
+    elif test  $param = "2"  
+        then
+            filepath=$1
+            hashpath=$2
+            nodata="3"
+            testParam  $filepath  $hashpath
+            jumpto testa
+        
+    fi
+
+else
+    echo " numero parametri  sbagliati :  $#   devono essere  2:  fileHash pathtoHash  o  3:  base  fileHash  pathtoHash"
+    exit 6
 fi
+
+
+#########
+
+# numparam=$(echo $#)
+# if test ! $numparam = "2"      
+# then               
+#     echo " non ci sono : FileHash(file repository degli Hash) - PathHash (il path  dei files che devono avere l hashing )"
+#     exit 1
+# else
+#     echo " ci sono due parametri"
+#     echo "  check fileHash per serializzare gli Hash delle directory"
+#     touch $1
+#     ls -l $1
+#     res=$?
+#     echo " result $? "   $res
+#     if test ! $res=0
+#     then 
+#         echo " Errore nella creazione file Hashing"
+#         exit 2
+#     fi
+#     echo "  check della  directory root per Hashing"
+#     ls -dl $2
+#     res=$?
+    
+#     echo " result \$? "   $res
+#     if test ! $res = "0"
+#     then 
+#         echo " Errore nel check della  directory  che si vuole Hash"
+#         exit 3
+#     fi
+#     echo " tutto OK "
+#     #exit 0 
+#     filepath=$1
+#     hashpath=$2
+#     jumpto testa
+# fi
 
 
 #test=qualcosa 
@@ -128,10 +207,13 @@ testa:
 # fi
 
 
-echo " cancello file Hash preesistente"
+echo " cancello file Hash preesistente se  esistente "
 rm $filepath
 #sleep 1
-hashfun $filepath   $hashpath
+# hashfun $filepath   $hashpath
+
+hashfun $filepath   $hashpath $nodata
+
 echo  -e "${EMB} Fine hashing"
 echo -e "${BGK} ${NONE}"
 exit 0
