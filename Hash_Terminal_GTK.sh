@@ -56,16 +56,83 @@ function hashfun
 {
     filehash=$1
     pathhash=$2
+    nodata1=$3
+    echo -e  "\n\tvalore di nodata1:  $nodata1  \n"
     echo "begin hashing path: " $pathhash " - Filehash: "  $filehash
     for ff in $(find $pathhash -type f);do echo $( md5sum $ff)  " - "   $(date) >> $filehash ; done
     echo "end hashing"
 }
-if test ! $1  = ""
-then 
-    echo "ce un parametro"
-    filepath=$1
-    jumpto testa
+
+
+function testParam
+{
+
+    #echo " ci sono due parametri"
+    echo "  check fileHash per serializzare gli Hash delle directory"
+    touch $1
+    ls -l $1
+    res=$?
+    echo " result \$? "   $res
+    if test ! $res = "0"
+    then 
+        echo " Errore nella creazione file Hashing"
+        exit 2
+    fi
+    echo "  check della  directory root per Hashing"
+    ls -dl $2
+    res=$?
+    
+    echo " result \$? "   $res
+    if test ! $res = "0"
+    then 
+        echo " Errore nel check della  directory  che si vuole Hash"
+        exit 3
+    fi
+    echo " tutto OK "
+}
+
+
+param=$#
+echo $param
+if test \( $param = "0" \) -o    \( $param = "1" \) -o    \( $param = "3" \) -o    \( $param = "2" \)
+then
+    echo  echo  "ok parametri "
+    if test \( $param = "1" \) -o    \( $param = "3" \) 
+    then
+            if  test $1 = "base" 
+            then
+            echo  "ok base " 
+            else  
+                echo "errore: con un solo parametro o 3 parametri, l  unico parametro accettato è base "
+                exit 5
+            fi
+            filepath=$2
+            hashpath=$3
+            nodata="1"  #  creo  hash md5  compatibile con md5sum in check -c  file 
+            if test  \( $param = "3" \) 
+            then
+                testParam  $filepath  $hashpath
+                jumpto testa
+            fi    
+        elif test  $param = "2"  
+        then
+            filepath=$1
+            hashpath=$2
+            testParam  $filepath  $hashpath
+            jumpto testa
+        
+    fi
+
+else
+    echo " numero parametri  sbagliati  $#"
 fi
+
+# if test ! $1  = ""
+# then 
+#     echo "ce un parametro"
+#     filepath=$1
+#     jumpto testa
+# fi
 
 
 test=qualcosa 
@@ -118,7 +185,7 @@ if  test $result = "0"
 fi
 
 #sleep 1
-hashfun $filepath   $hashpath
+hashfun $filepath   $hashpath $nodata
 echo  -e "${EMB} Fine hashing"
 echo -e "${BGK} ${NONE}"
 exit 0
